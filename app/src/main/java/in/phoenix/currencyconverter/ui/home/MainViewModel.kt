@@ -1,12 +1,16 @@
 package `in`.phoenix.currencyconverter.ui.home
 
+import `in`.phoenix.currencyconverter.model.ApiResult
 import `in`.phoenix.currencyconverter.model.Currency
+import `in`.phoenix.currencyconverter.model.CurrencyResponse
+import androidx.annotation.UiThread
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
+import org.json.JSONObject
 
 /**
  * Created by Charan on January 29, 2021
@@ -59,16 +63,42 @@ class MainViewModel: ViewModel() {
 
     fun checkSanity(): Boolean {
         return if (fromCurrency != null && toCurrency != null &&
-                fromCurrency != toCurrency) {
+            fromCurrency != toCurrency) {
             return true
         } else {
             false
         }
     }
 
+    private val _currencyConversion = MutableLiveData<ApiResult<CurrencyResponse>>()
+    val observeCurrencyConversion = _currencyConversion as LiveData<ApiResult<CurrencyResponse>>
+
+    @UiThread
     fun getConversion() {
         viewModelScope.launch(Dispatchers.IO) {
-            MainRepo.getConversion(fromCurrency!!.id, toCurrency!!.id)
+            _currencyConversion.postValue(ApiResult.Loading())
+            try {
+                val data = MainRepo.getConversion(fromCurrency!!.id, toCurrency!!.id)
+                val jsonObject = JSONObject(data)
+                if (fromCurrency != null && toCurrency != null) {
+                    val key2Check = "${fromCurrency!!.id}_${toCurrency!!.id}"
+                    if (jsonObject.has(key2Check)) {
+                        val currencyResponse = CurrencyResponse(key2Check,
+                            "${jsonObject.getDouble(key2Check)} ${toCurrency!!.id}")
+                        _currencyConversion.postValue(ApiResult.Success(currencyResponse))
+
+                    } else {
+                        _currencyConversion.postValue(ApiResult.Failure(null, null))
+                    }
+
+                } else {
+                    _currencyConversion.postValue(ApiResult.Failure(null, null))
+                }
+
+            } catch (exception: Exception) {
+                exception.printStackTrace()
+                _currencyConversion.postValue(ApiResult.Failure("Oops!", exception))
+            }
         }
     }
 }

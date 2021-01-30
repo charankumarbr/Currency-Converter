@@ -2,6 +2,7 @@ package `in`.phoenix.currencyconverter.ui.home
 
 import `in`.phoenix.currencyconverter.CurrencyConverter
 import `in`.phoenix.currencyconverter.model.Currency
+import `in`.phoenix.currencyconverter.network.ApiConnector
 import `in`.phoenix.currencyconverter.util.AppConstants
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
@@ -58,10 +59,13 @@ object MainRepo {
         }
     }
 
-    suspend fun getConversion(fromCurrencyId: String, toCurrencyId: String): Any {
+    suspend fun getConversion(fromCurrencyId: String, toCurrencyId: String): String {
 
         return withContext(Dispatchers.IO) {
-
+            ApiConnector.getAppApi().getCurrencyConversion(
+                fromCurrencyId + "_" + toCurrencyId,
+                ApiConnector.API_KEY
+            )
         }
     }
 }

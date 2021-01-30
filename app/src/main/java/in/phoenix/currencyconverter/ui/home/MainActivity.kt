@@ -1,7 +1,10 @@
 package `in`.phoenix.currencyconverter.ui.home
 
 import `in`.phoenix.currencyconverter.R
+import `in`.phoenix.currencyconverter.model.ApiResult
+import `in`.phoenix.currencyconverter.util.gone
 import `in`.phoenix.currencyconverter.util.isVisible
+import `in`.phoenix.currencyconverter.util.visible
 import android.os.Bundle
 import android.util.Log
 import android.view.View
@@ -67,6 +70,32 @@ class MainActivity : AppCompatActivity() {
                 amTvCurrencyNameTo.text = it.currencyName
                 amTvCurrencyTo.text = it.id
                 amTvCurrencyValueTo.text = ""
+            }
+        })
+
+        mainViewModel.observeCurrencyConversion.observe(this, {
+            it?.let {
+                when (it) {
+                    is ApiResult.Success -> {
+                        amPbLoading.gone()
+                        amTvCurrencyValueTo.text = it.data.currencyValue
+                        amIvSwapFromTo.visible()
+                    }
+                    is ApiResult.Failure -> {
+                        amPbLoading.gone()
+                        amIvSwapFromTo.visible()
+                        if (it.message != null) {
+                            Toast.makeText(MainActivity@this, it.message, Toast.LENGTH_SHORT).show()
+
+                        } else if (it.throwable != null) {
+                            Toast.makeText(MainActivity@this, R.string.oops, Toast.LENGTH_SHORT).show()
+                        }
+                    }
+                    is ApiResult.Loading -> {
+                        amIvSwapFromTo.gone()
+                        amPbLoading.visible()
+                    }
+                }
             }
         })
     }
