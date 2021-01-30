@@ -3,6 +3,7 @@ package `in`.phoenix.currencyconverter.ui.home
 import `in`.phoenix.currencyconverter.model.ApiResult
 import `in`.phoenix.currencyconverter.model.Currency
 import `in`.phoenix.currencyconverter.model.CurrencyResponse
+import `in`.phoenix.currencyconverter.network.ApiConnector
 import androidx.annotation.UiThread
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
@@ -75,6 +76,12 @@ class MainViewModel: ViewModel() {
 
     @UiThread
     fun getConversion() {
+
+        if (ApiConnector.API_KEY == "YOUR_API_KEY_GOES_HERE") {
+            _currencyConversion.postValue(ApiResult.Failure("REGISTER FOR AN API KEY", null))
+            return
+        }
+
         viewModelScope.launch(Dispatchers.IO) {
             _currencyConversion.postValue(ApiResult.Loading())
             try {
