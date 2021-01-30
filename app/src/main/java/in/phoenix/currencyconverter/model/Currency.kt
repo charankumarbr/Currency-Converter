@@ -6,4 +6,13 @@ package `in`.phoenix.currencyconverter.model
 data class Currency(
     val currencyName: String,
     val id: String
-)
+) {
+
+    override fun equals(other: Any?): Boolean {
+        if (other is Currency && other.id == this.id &&
+                other.currencyName == this.currencyName) {
+            return true
+        }
+        return super.equals(other)
+    }
+}

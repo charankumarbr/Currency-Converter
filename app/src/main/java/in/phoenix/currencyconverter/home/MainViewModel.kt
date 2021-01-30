@@ -57,4 +57,19 @@ class MainViewModel: ViewModel() {
             false
         }
     }
+
+    fun checkSanity(): Boolean {
+        return if (fromCurrency != null && toCurrency != null &&
+                fromCurrency != toCurrency) {
+            return true
+        } else {
+            false
+        }
+    }
+
+    fun getConversion() {
+        viewModelScope.launch(Dispatchers.IO) {
+            MainRepo.getConversion(fromCurrency!!.id, toCurrency!!.id)
+        }
+    }
 }

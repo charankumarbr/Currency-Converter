@@ -7,6 +7,7 @@ import android.util.Log
 import android.view.View
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
+import androidx.core.view.isVisible
 import androidx.fragment.app.FragmentActivity
 import androidx.lifecycle.ViewModelProvider
 import kotlinx.android.synthetic.main.activity_main.*
@@ -76,6 +77,17 @@ class MainActivity : AppCompatActivity() {
                 if (!amPbLoading.isVisible()) {
                     val isSwap = mainViewModel.swapSelectedCurrency()
                     if (!isSwap) {
+                        Toast.makeText(MainActivity@ this, R.string.oops, Toast.LENGTH_SHORT).show()
+                    }
+                }
+            }
+
+            R.id.amIvGo -> {
+                if (!amPbLoading.isVisible) {
+                    if (mainViewModel.checkSanity()) {
+                        mainViewModel.getConversion()
+
+                    } else {
                         Toast.makeText(MainActivity@ this, R.string.oops, Toast.LENGTH_SHORT).show()
                     }
                 }

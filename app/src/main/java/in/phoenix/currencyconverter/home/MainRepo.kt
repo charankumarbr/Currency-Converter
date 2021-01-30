@@ -57,4 +57,11 @@ object MainRepo {
             currencies
         }
     }
+
+    suspend fun getConversion(fromCurrencyId: String, toCurrencyId: String): Any {
+
+        return withContext(Dispatchers.IO) {
+
+        }
+    }
 }
