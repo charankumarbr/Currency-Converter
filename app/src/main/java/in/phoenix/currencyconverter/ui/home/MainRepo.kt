@@ -1,4 +1,4 @@
-package `in`.phoenix.currencyconverter.home
+package `in`.phoenix.currencyconverter.ui.home
 
 import `in`.phoenix.currencyconverter.CurrencyConverter
 import `in`.phoenix.currencyconverter.model.Currency

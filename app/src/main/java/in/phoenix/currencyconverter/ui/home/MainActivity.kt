@@ -1,4 +1,4 @@
-package `in`.phoenix.currencyconverter.home
+package `in`.phoenix.currencyconverter.ui.home
 
 import `in`.phoenix.currencyconverter.R
 import `in`.phoenix.currencyconverter.util.isVisible
