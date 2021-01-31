@@ -13,6 +13,7 @@
         android:supportsRtl="true"
         android:theme="@style/Theme.CurrencyConverter"
         android:networkSecurityConfig="@xml/network_security_config">
+
         <activity android:name="in.phoenix.currencyconverter.ui.home.MainActivity"
             android:screenOrientation="portrait">
             <intent-filter>
