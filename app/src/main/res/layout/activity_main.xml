@@ -4,7 +4,7 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    tools:context=".home.MainActivity"
+    tools:context=".ui.home.MainActivity"
     android:background="@color/purple_500">
 
     <com.google.android.material.card.MaterialCardView
@@ -171,6 +171,6 @@
         app:layout_constraintEnd_toEndOf="parent"
         android:layout_marginEnd="16dp"
         android:layout_marginBottom="12dp"
-        android:src="@drawable/ic_baseline_arrow_forward_24"/>
+        android:src="@drawable/ic_arrow_forward_24"/>
 
 </androidx.constraintlayout.widget.ConstraintLayout>

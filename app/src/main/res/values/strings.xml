@@ -1,4 +1,8 @@
 <resources>
     <string name="app_name">Currency Converter</string>
     <string name="oops">Oops!</string>
+    <string name="from">from</string>
+    <string name="to">to</string>
+    <string name="choose_currency">Choose currency</string>
+    <string name="no_currency_to_choose">No currency to choose</string>
 </resources>
