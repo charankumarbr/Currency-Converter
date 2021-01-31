@@ -51,6 +51,8 @@ class MainViewModel: ViewModel() {
         }
     }
 
+    fun getCurrencyList(): List<Currency>? = currencyList.value ?: null
+
     fun swapSelectedCurrency(): Boolean {
         return if (fromCurrency != null && toCurrency != null) {
             val temp = toCurrency
@@ -63,12 +65,7 @@ class MainViewModel: ViewModel() {
     }
 
     fun checkSanity(): Boolean {
-        return if (fromCurrency != null && toCurrency != null &&
-            fromCurrency != toCurrency) {
-            return true
-        } else {
-            false
-        }
+        return (fromCurrency != null && toCurrency != null && fromCurrency != toCurrency)
     }
 
     private val _currencyConversion = MutableLiveData<ApiResult<CurrencyResponse>>()
