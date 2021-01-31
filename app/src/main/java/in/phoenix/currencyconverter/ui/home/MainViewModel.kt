@@ -51,7 +51,7 @@ class MainViewModel: ViewModel() {
         }
     }
 
-    fun getCurrencyList(): List<Currency>? = currencyList.value ?: null
+    fun getCurrencyList(): List<Currency>? = currencyList.value
 
     fun swapSelectedCurrency(): Boolean {
         return if (fromCurrency != null && toCurrency != null) {
