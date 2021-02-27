@@ -41,8 +41,8 @@ class MainViewModel: ViewModel() {
         val currencies = currencyList.value
         if (currencies == null || currencies.isEmpty()) {
             viewModelScope.launch(Dispatchers.IO) {
-                val currencies = MainRepo.fetchCurrencyList()
-                currencies?.let {
+                val currenciesFromRepo = MainRepo.fetchCurrencyList()
+                currenciesFromRepo?.let {
                     currencyList.postValue(it)
 
                 } ?:currencyList.postValue(ArrayList())

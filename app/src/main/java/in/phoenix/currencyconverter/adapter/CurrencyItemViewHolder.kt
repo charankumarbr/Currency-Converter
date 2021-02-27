@@ -35,7 +35,7 @@ class CurrencyItemViewHolder(
     }
 
     private fun canCurrencyBeChoosen(): Boolean {
-        return (currency.id != null && (currency.id != fromId && currency.id != toId))
+        return (((currency.id != null)) && (currency.id != fromId && currency.id != toId))
     }
 
     fun setData(currency: Currency, fromId: String?, toId: String?) {
