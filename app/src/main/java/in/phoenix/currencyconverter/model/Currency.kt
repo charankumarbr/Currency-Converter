@@ -1,7 +1,7 @@
 package `in`.phoenix.currencyconverter.model
 
 import android.os.Parcelable
-import kotlinx.android.parcel.Parcelize
+import kotlinx.parcelize.Parcelize
 
 /**
  * Created by Charan on January 29, 2021

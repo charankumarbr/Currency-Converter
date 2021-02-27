@@ -11,7 +11,7 @@ import android.os.Bundle
 import android.view.*
 import androidx.fragment.app.DialogFragment
 import androidx.fragment.app.Fragment
-import kotlinx.android.synthetic.main.fragment_currency_chooser.*
+import androidx.recyclerview.widget.RecyclerView
 
 
 /**
@@ -68,6 +68,7 @@ class CurrencyChooserFragment : DialogFragment() {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
         currencies?.let {
+            val fccRvCurrency = view.findViewById<RecyclerView>(R.id.fccRvCurrency)
             fccRvCurrency.adapter = CurrencyAdapter(it, param1, param2, currencyClickListener)
         }
     }

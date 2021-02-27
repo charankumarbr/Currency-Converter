@@ -4,6 +4,7 @@ import `in`.phoenix.currencyconverter.model.ApiResult
 import `in`.phoenix.currencyconverter.model.Currency
 import `in`.phoenix.currencyconverter.model.CurrencyResponse
 import `in`.phoenix.currencyconverter.network.ApiConnector
+import android.text.TextUtils
 import androidx.annotation.UiThread
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
@@ -12,6 +13,7 @@ import androidx.lifecycle.viewModelScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import org.json.JSONObject
+import java.text.DecimalFormat
 
 /**
  * Created by Charan on January 29, 2021
@@ -88,7 +90,7 @@ class MainViewModel: ViewModel() {
                     val key2Check = "${fromCurrency!!.id}_${toCurrency!!.id}"
                     if (jsonObject.has(key2Check)) {
                         val currencyResponse = CurrencyResponse(key2Check,
-                            "${jsonObject.getDouble(key2Check)} ${toCurrency!!.id}")
+                            jsonObject.getDouble(key2Check), toCurrency!!.id)
                         _currencyConversion.postValue(ApiResult.Success(currencyResponse))
 
                     } else {
@@ -103,6 +105,19 @@ class MainViewModel: ViewModel() {
                 exception.printStackTrace()
                 _currencyConversion.postValue(ApiResult.Failure("Oops!", exception))
             }
+        }
+    }
+
+    fun computeValue(amount: String?, conversionCurrencyResponse: CurrencyResponse): String? {
+        return if (TextUtils.isEmpty(amount)) {
+            null
+        } else {
+            val df = DecimalFormat("#.####")
+            val formatted = df.format(conversionCurrencyResponse.value)
+            val compute: Double = amount!!.toInt() * formatted.toDouble()
+            val endDf = DecimalFormat("##,##,##,##,##,##,###.####")
+            val computeAsString = endDf.format(compute)
+            "${fromCurrency?.id} $amount is ${toCurrency?.id} $computeAsString"
         }
     }
 }

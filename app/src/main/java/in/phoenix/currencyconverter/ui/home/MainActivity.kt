@@ -2,28 +2,44 @@ package `in`.phoenix.currencyconverter.ui.home
 
 import `in`.phoenix.currencyconverter.R
 import `in`.phoenix.currencyconverter.adapter.OnCurrencyChoosen
+import `in`.phoenix.currencyconverter.databinding.ActivityMainBinding
+import `in`.phoenix.currencyconverter.databinding.ActivityMainNewBinding
 import `in`.phoenix.currencyconverter.model.ApiResult
 import `in`.phoenix.currencyconverter.model.Currency
+import `in`.phoenix.currencyconverter.model.CurrencyResponse
 import `in`.phoenix.currencyconverter.util.AppConstants
+import `in`.phoenix.currencyconverter.util.AppUtil
 import `in`.phoenix.currencyconverter.util.gone
-import `in`.phoenix.currencyconverter.util.isVisible
 import `in`.phoenix.currencyconverter.util.visible
 import android.os.Bundle
 import android.view.View
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
+import androidx.appcompat.app.AppCompatDelegate
 import androidx.core.view.isVisible
 import androidx.fragment.app.FragmentActivity
 import androidx.lifecycle.ViewModelProvider
-import kotlinx.android.synthetic.main.activity_main.*
 
 class MainActivity : AppCompatActivity(), OnCurrencyChoosen {
 
     private lateinit var mainViewModel: MainViewModel
 
+    private var activityMainBinding: ActivityMainBinding? = null
+    private var activityMainNewBinding: ActivityMainNewBinding? = null
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        setContentView(R.layout.activity_main)
+        AppCompatDelegate.setDefaultNightMode(AppCompatDelegate.MODE_NIGHT_FOLLOW_SYSTEM)
+        if (AppUtil.isNewUI()) {
+            activityMainNewBinding = ActivityMainNewBinding.inflate(layoutInflater)
+            activityMainBinding = null
+            setContentView(activityMainNewBinding!!.root)
+
+        } else {
+            activityMainBinding = ActivityMainBinding.inflate(layoutInflater)
+            activityMainNewBinding = null
+            setContentView(activityMainBinding!!.root)
+        }
 
         ViewModelProvider(this as FragmentActivity).get(MainViewModel::class.java)
             .also {
@@ -32,17 +48,29 @@ class MainActivity : AppCompatActivity(), OnCurrencyChoosen {
                 mainViewModel.fetchCurrencyList()
             }
 
-        amIvSwapFromTo.setOnClickListener(clickListener)
-        amIvGo.setOnClickListener(clickListener)
-        amLayoutFrom.setOnClickListener(clickListener)
-        amLayoutTo.setOnClickListener(clickListener)
+        setOnClickListeners()
+    }
+
+    private fun setOnClickListeners() {
+        if (activityMainBinding != null) {
+            activityMainBinding!!.amIvSwapFromTo.setOnClickListener(clickListener)
+            activityMainBinding!!.amIvGo.setOnClickListener(clickListener)
+            activityMainBinding!!.amLayoutFrom.setOnClickListener(clickListener)
+            activityMainBinding!!.amLayoutTo.setOnClickListener(clickListener)
+
+        } else {
+            activityMainNewBinding!!.amIvSwapFromTo.setOnClickListener(clickListener)
+            activityMainNewBinding!!.amIvGo.setOnClickListener(clickListener)
+            activityMainNewBinding!!.amLayoutFrom.setOnClickListener(clickListener)
+            activityMainNewBinding!!.amLayoutTo.setOnClickListener(clickListener)
+        }
     }
 
     private fun subscribeObservers() {
         mainViewModel.observeCurrencyList.observe(this, { currencyList ->
             currencyList?.let {
                 if (currencyList.isEmpty()) {
-                    Toast.makeText(MainActivity@this, getString(R.string.no_currency_to_choose), Toast.LENGTH_SHORT).show()
+                    Toast.makeText(this, getString(R.string.no_currency_to_choose), Toast.LENGTH_SHORT).show()
                     finish()
 
                 } else {
@@ -63,66 +91,135 @@ class MainActivity : AppCompatActivity(), OnCurrencyChoosen {
 
         mainViewModel.observeFromCurrency.observe(this, { fromCurrency ->
             fromCurrency?.let {
-                amTvCurrencyNameFrom.text = it.currencyName
-                amTvCurrencyFrom.text = it.id
-                amTvCurrencyValueFrom.text = "1 ${it.id} is"
-                amTvCurrencyValueTo.text = ""
+                setFromCurrency(it)
             }
         })
 
         mainViewModel.observeToCurrency.observe(this, { toCurrency ->
             toCurrency?.let {
-                amTvCurrencyNameTo.text = it.currencyName
-                amTvCurrencyTo.text = it.id
-                amTvCurrencyValueTo.text = ""
+                setToCurrency(it)
             }
         })
 
         mainViewModel.observeCurrencyConversion.observe(this, {
             it?.let {
-                when (it) {
-                    is ApiResult.Success -> {
-                        amPbLoading.gone()
-                        amTvCurrencyValueTo.text = it.data.currencyValue
-                        amIvSwapFromTo.visible()
-                    }
-                    is ApiResult.Failure -> {
-                        amPbLoading.gone()
-                        amIvSwapFromTo.visible()
-                        if (it.message != null) {
-                            Toast.makeText(MainActivity@this, it.message, Toast.LENGTH_SHORT).show()
+                setCurrencyConvertResult(it)
+            }
+        })
+    }
 
-                        } else if (it.throwable != null) {
-                            Toast.makeText(MainActivity@this, R.string.oops, Toast.LENGTH_SHORT).show()
-                        }
-                    }
-                    is ApiResult.Loading -> {
-                        amIvSwapFromTo.gone()
-                        amPbLoading.visible()
+    private fun setCurrencyConvertResult(it: ApiResult<CurrencyResponse>) {
+        when (it) {
+            is ApiResult.Success -> {
+                if (activityMainBinding != null) {
+                    activityMainBinding!!.amPbLoading.gone()
+                    activityMainBinding!!.amTvCurrencyValueTo.text = "${it.data.value} ${it.data.id}"
+                    activityMainBinding!!.amIvSwapFromTo.visible()
+                    activityMainBinding!!.amTvCurrencyValueFrom.text = "1 ${mainViewModel.fromCurrency?.id} is"
+
+                } else {
+                    activityMainNewBinding!!.amPbLoading.gone()
+                    activityMainNewBinding!!.amTvCurrencyValueTo.text = "${it.data.value} ${it.data.id}"
+                    activityMainNewBinding!!.amIvSwapFromTo.visible()
+                    activityMainNewBinding!!.amTvCurrencyValueFrom.text = "1 ${mainViewModel.fromCurrency?.id} is"
+
+                    val amount = activityMainNewBinding!!.amEtAmount.text.toString()
+                    val computedValue = mainViewModel.computeValue(amount, it.data)
+                    if (computedValue != null) {
+                        activityMainNewBinding!!.amTvCurrencyValue.text = computedValue
+                        activityMainNewBinding!!.amTvCurrencyValue.visible()
+
+                    } else {
+                        activityMainNewBinding!!.amTvCurrencyValue.gone()
                     }
                 }
             }
-        })
+
+            is ApiResult.Failure -> {
+                if (activityMainBinding != null) {
+                    activityMainBinding!!.amPbLoading.gone()
+                    activityMainBinding!!.amIvSwapFromTo.visible()
+                    activityMainBinding!!.amTvCurrencyValueTo.text = ""
+                    activityMainBinding!!.amTvCurrencyValueFrom.text = ""
+
+                } else {
+                    activityMainNewBinding!!.amPbLoading.gone()
+                    activityMainNewBinding!!.amIvSwapFromTo.visible()
+                    activityMainNewBinding!!.amTvCurrencyValueTo.text = ""
+                    activityMainNewBinding!!.amTvCurrencyValueFrom.text = ""
+                }
+
+                if (it.message != null) {
+                    Toast.makeText(this, it.message, Toast.LENGTH_SHORT).show()
+
+                } else if (it.throwable != null) {
+                    Toast.makeText(this, R.string.oops, Toast.LENGTH_SHORT).show()
+                }
+            }
+
+            is ApiResult.Loading -> {
+                if (activityMainBinding != null) {
+                    activityMainBinding!!.amIvSwapFromTo.gone()
+                    activityMainBinding!!.amPbLoading.visible()
+
+                } else {
+                    activityMainNewBinding!!.amIvSwapFromTo.gone()
+                    activityMainNewBinding!!.amPbLoading.visible()
+                }
+            }
+        }
+    }
+
+    private fun setFromCurrency(it: Currency) {
+        if (activityMainBinding != null) {
+            activityMainBinding!!.amTvCurrencyNameFrom.text = it.currencyName
+            activityMainBinding!!.amTvCurrencyFrom.text = it.id
+            //amTvCurrencyValueFrom.text = "1 ${it.id} is"
+            activityMainBinding!!.amTvCurrencyValueFrom.text = ""
+            activityMainBinding!!.amTvCurrencyValueTo.text = ""
+
+        } else {
+            activityMainNewBinding!!.amTvCurrencyNameFrom.text = it.currencyName
+            activityMainNewBinding!!.amTvCurrencyFrom.text = it.id
+            //amTvCurrencyValueFrom.text = "1 ${it.id} is"
+            activityMainNewBinding!!.amTvCurrencyValueFrom.text = ""
+            activityMainNewBinding!!.amTvCurrencyValueTo.text = ""
+
+            activityMainNewBinding!!.amTvCurrencyValue.text = ""
+        }
+    }
+
+    private fun setToCurrency(it: Currency) {
+        if (activityMainBinding != null) {
+            activityMainBinding!!.amTvCurrencyNameTo.text = it.currencyName
+            activityMainBinding!!.amTvCurrencyTo.text = it.id
+            activityMainBinding!!.amTvCurrencyValueTo.text = ""
+
+        } else {
+            activityMainNewBinding!!.amTvCurrencyNameTo.text = it.currencyName
+            activityMainNewBinding!!.amTvCurrencyTo.text = it.id
+            activityMainNewBinding!!.amTvCurrencyValueTo.text = ""
+        }
     }
 
     private val clickListener = View.OnClickListener {
         when (it.id) {
             R.id.amIvSwapFromTo -> {
-                if (!amPbLoading.isVisible()) {
+                if (!isLoading()) {
                     val isSwap = mainViewModel.swapSelectedCurrency()
                     if (!isSwap) {
-                        Toast.makeText(MainActivity@ this, R.string.oops, Toast.LENGTH_SHORT).show()
+                        Toast.makeText(this, R.string.oops, Toast.LENGTH_SHORT).show()
                     }
                 }
             }
 
             R.id.amIvGo -> {
-                if (!amPbLoading.isVisible) {
+                if (!isLoading()) {
                     if (mainViewModel.checkSanity()) {
                         mainViewModel.getConversion()
 
                     } else {
-                        Toast.makeText(MainActivity@ this, R.string.oops, Toast.LENGTH_SHORT).show()
+                        Toast.makeText(this, R.string.oops, Toast.LENGTH_SHORT).show()
                     }
                 }
             }
@@ -137,11 +234,19 @@ class MainActivity : AppCompatActivity(), OnCurrencyChoosen {
         }
     }
 
+    private fun isLoading(): Boolean {
+        return if (activityMainBinding != null) {
+            activityMainBinding!!.amPbLoading.isVisible
+        } else {
+            activityMainNewBinding!!.amPbLoading.isVisible
+        }
+    }
+
     private fun chooseCurrency(fromCurrency: Currency?, toCurrency: Currency?, isFrom: Boolean) {
         val fragment = CurrencyChooserFragment.newInstance(
             mainViewModel.getCurrencyList() as ArrayList<Currency>?,
-            fromCurrency?.id ?: null,
-            toCurrency?.id ?: null,
+            fromCurrency?.id,
+            toCurrency?.id,
             isFrom)
         if (!isFinishing) {
             fragment.showNow(supportFragmentManager, "CURRENCY_CHOOSER")
